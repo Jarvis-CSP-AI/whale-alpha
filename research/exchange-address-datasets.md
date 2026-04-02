@@ -3,38 +3,47 @@
 Open-source and publicly available datasets of known cryptocurrency exchange wallet addresses,
 for cross-referencing against the Whale Alert historical archive (98K transactions, 2018-2026).
 
-Last updated: 2026-04-02
+Last updated: 2026-04-02 (revised after validation)
 
 ---
 
-## Tier 1: High-Quality, Actively Maintained
+## Status: External Datasets Unavailable — Self-Labeling Approach Used
 
-### 1. EVEREST (by Vacuumlabs)
+**EVEREST and Labelbase repos are both offline** (removed or made private as of April 2026).
+The planned approach of downloading external exchange address datasets was not viable.
+
+Instead, we built a **self-labeling pipeline** that leverages Whale Alert's own exchange labels
+already embedded in the archive. The key insight: ~85% of records already have exchange names
+in the `from`/`to` fields. We extracted all (blockchain, address) → exchange mappings from those
+labeled records, then used the resulting lookup table to identify exchanges in the remaining
+unlabeled transactions.
+
+**Results:** 92.7% of transactions have at least one side labeled, 82.5% have both sides labeled.
+See `src/enrich_with_exchanges.py` and `data/exchange-lookup.json.gz`.
+
+---
+
+## Tier 1: High-Quality (DEAD LINKS — Archived for Reference)
+
+### 1. EVEREST (by Vacuumlabs) — OFFLINE
 - **URL:** https://github.com/vacuumlabs/everest-research / https://everest.research/
-- **Chains:** Bitcoin, Ethereum, Litecoin, Bitcoin Cash, Dogecoin, Dash, Zcash, Bitcoin SV
-- **Address count:** ~5,000+ labeled addresses (entities including exchanges, mining pools, services)
-- **Last updated:** ~2022 (paper published 2023)
-- **License:** MIT (code), data under permissive terms
-- **Assessment:** Best academic-quality dataset. Hierarchical entity clustering.
-  Covers 5 of our 12 chains (BTC, ETH, LTC, BCH, DOGE). **Primary source for BTC/LTC/BCH/DOGE.**
+- **Was:** Best academic-quality dataset. Hierarchical entity clustering. MIT license.
+  Covered BTC, ETH, LTC, BCH, DOGE, Dash, Zcash, Bitcoin SV.
+- **Status:** Repo removed or made private as of April 2026. No archive mirror found.
 
-### 2. Labelbase (by ZeroxAnalytics)
+### 2. Labelbase (by ZeroxAnalytics) — OFFLINE
 - **URL:** https://github.com/zeroxanalytics/labels / https://labelbase.info/
-- **Chains:** Ethereum (primary), some EVM chains via Etherscan-compatible scrapers
-- **Address count:** ~50,000+ labeled addresses total; exchange subset ~5,000-15,000
-- **Last updated:** 2024-2025 (actively maintained)
-- **License:** MIT
-- **Assessment:** Etherscan label scraper + community contributions. Filterable by "exchange" category.
-  **Primary supplement for ETH coverage.**
+- **Was:** Etherscan label scraper + community contributions. MIT license. ~50K+ labeled addresses.
+- **Status:** Repo and website both inaccessible as of April 2026.
 
-### 3. Etherscan Labeled Accounts
+### 3. Etherscan Labeled Accounts — Available but Restricted
 - **URL:** https://etherscan.io/accounts (labeled accounts section)
 - **Chains:** Ethereum only (PolygonScan, BSCScan variants exist for other EVM chains)
 - **Address count:** ~100,000+ labeled addresses total; exchange subset ~10,000-20,000
 - **Last updated:** Continuously
 - **License:** Proprietary — Etherscan ToS restricts bulk scraping, individual lookups allowed
 - **Assessment:** Most comprehensive for Ethereum, but licensing is a gray area for bulk use.
-  Good for validation, risky for production pipeline. **Use for spot-checking, not bulk ingestion.**
+  **Use for spot-checking, not bulk ingestion.**
 
 ---
 
@@ -68,23 +77,27 @@ Various GitHub repos with exchange deposit addresses — small, incomplete, unma
 
 ---
 
-## Chain Coverage Matrix
+## Chain Coverage Matrix (Self-Labeling Results)
 
-| Chain (in our data) | EVEREST | Labelbase | Etherscan | WalletExplorer | GitHub misc | Coverage |
-|---|---|---|---|---|---|---|
-| **Ethereum** (54K txns) | ✅ | ✅✅ | ✅✅ | ❌ | ✅ | **Excellent** |
-| **Bitcoin** (24K txns) | ✅✅ | ❌ | ❌ | ✅✅ | ✅ | **Good** |
-| **Tron** (11K txns) | ❌ | ❌ | ❌ | ❌ | ❌ | **None** |
-| **Ripple** (5.7K txns) | ❌ | ❌ | ❌ | ❌ | ❌ | **None** |
-| **Solana** (1.5K txns) | ❌ | ❌ | ❌ | ❌ | ❌ | **None** |
-| **Dogecoin** (663 txns) | ✅ | ❌ | ❌ | ❌ | ✅ | **Weak** |
-| **Litecoin** (121 txns) | ✅ | ❌ | ❌ | ❌ | ✅ | **Weak** |
-| **Bitcoin Cash** (65 txns) | ✅ | ❌ | ❌ | ❌ | ✅ | **Weak** |
-| **Cardano** (42 txns) | ❌ | ❌ | ❌ | ❌ | ❌ | **None** |
-| **Algorand** (40 txns) | ❌ | ❌ | ❌ | ❌ | ❌ | **None** |
-| **Polygon** (12 txns) | ❌ | ✅ (PolygonScan) | ✅ (PolygonScan) | ❌ | ❌ | **Moderate** |
+Coverage achieved using the built-in enrichment pipeline (no external datasets needed):
 
-~80% of our transactions (ETH + BTC) have good coverage. The remaining 20% need alternative approaches.
+| Chain | Total Txns | Both Labeled | From Only | To Only | Neither |
+|---|---|---|---|---|---|
+| **Ethereum** | 54,898 | 88.4% | 1.4% | 5.1% | 5.1% |
+| **Bitcoin** | 24,151 | 82.7% | 1.5% | 4.2% | 11.6% |
+| **Tron** | 11,248 | 90.4% | 1.0% | 3.2% | 5.4% |
+| **Ripple** | 5,751 | 27.9% | 28.6% | 24.1% | 19.4% |
+| **Solana** | 1,520 | 45.1% | 18.2% | 22.8% | 13.9% |
+| **Dogecoin** | 663 | 79.8% | 2.7% | 7.5% | 10.0% |
+| **Litecoin** | 121 | 78.5% | 3.3% | 5.0% | 13.2% |
+| **Bitcoin Cash** | 65 | 73.8% | 4.6% | 7.7% | 13.9% |
+| **Cardano** | 42 | 40.5% | 21.4% | 16.7% | 21.4% |
+| **Algorand** | 40 | 42.5% | 20.0% | 17.5% | 20.0% |
+| **Polygon** | 12 | 75.0% | 8.3% | 8.3% | 8.4% |
+
+**Overall: 92.7% have at least one side labeled, 82.5% have both sides labeled.**
+
+The lookup table contains **279,411 unique (chain, address) pairs** across **65 identified exchanges**.
 
 ---
 
