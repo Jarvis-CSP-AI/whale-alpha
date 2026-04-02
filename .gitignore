@@ -23,8 +23,12 @@ data/*.csv
 data/*.parquet
 data/*.json
 data/*.jsonl
+data/*.json.gz
+data/exchange-datasets/
 !data/.gitkeep
 !data/whale-alerts-archive.json.gzip
+!data/enriched-archive.json.gz
+!data/exchange-lookup.json.gz
 
 # IDE
 .vscode/

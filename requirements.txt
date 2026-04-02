@@ -1,0 +1,7 @@
+# Whale Alpha - Exchange Address Enrichment Pipeline
+# No external dependencies beyond Python stdlib required
+# The pipeline uses only: gzip, json, collections, re, os, sys, time
+
+# Optional: for future data processing
+# pandas>=2.0
+# requests>=2.28
